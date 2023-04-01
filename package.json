@@ -10,7 +10,7 @@
   },
   "keywords": [],
   "author": "potch",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@potch/tinyserve": "^1.1.0"
   }
