@@ -10,6 +10,10 @@ npm install @potch/signals
 
 ## Demo
 
+[view the demo is live on Glitch!](https://signals-demo.glitch.me/)
+
+or to run it locally:
+
 ```
 npm start
 ```
