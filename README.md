@@ -19,7 +19,7 @@ then visit `localhost:8080` in your browser.
 ## Usage
 
 ```js
-// see example.js
+// `node example.js`
 import { signal, computed, effect, batch } from "@potch/signals";
 
 // signals can be any value
@@ -52,3 +52,9 @@ batch(() => {
   b.value = 7;
 });
 ```
+
+## How it Works
+
+I built this library to understand how basic reactive "signals" work. It's useful for small projects but there are more comprehensive first-party signals implementations available for frameworks and better reactive programming tools out there in general.
+
+When a computed value or an effect is created, we mark it as the current context. When the initial value of the context is computed (by running the supplied function), the library detects every access to a signal or computed values `.value` property (via their `get value()` getters) and records a dependency. When the `.value` of signals is set, their dependencies are looked up in a `Map` and the `.update()` method is called. In the case of a computed value, this will update the computed value and propagate updates to _its_ dependencies. In the case of an effect, the effect function is triggered.
