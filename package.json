@@ -1,0 +1,17 @@
+{
+  "name": "@potch/signals",
+  "version": "1.0.0",
+  "description": "a small reactive signals library",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tinyserve -w ."
+  },
+  "keywords": [],
+  "author": "potch",
+  "license": "ISC",
+  "devDependencies": {
+    "@potch/tinyserve": "^1.1.0"
+  }
+}
