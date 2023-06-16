@@ -1,15 +1,4 @@
-import { signal, computed, effect, batch } from "./index.js";
-
-const whenChanged = (source) => {
-  let lastVal = source.value;
-  let output = signal(lastVal);
-  effect(() => {
-    if (lastVal !== source.value) {
-      lastVal = output.value = source.value;
-    }
-  });
-  return output;
-};
+import { signal, computed, effect, batch, onchange } from "./index.js";
 
 // small dom creation helper
 const makeEl = (name, props = {}, fn) => {
@@ -24,7 +13,7 @@ const r = signal(192);
 const g = signal(192);
 const b = signal(192);
 const color = computed(() => `rgb(${r.value},${g.value},${b.value})`);
-const isDark = whenChanged(
+const isDark = onchange(
   computed(() => r.value * 0.299 + g.value * 0.587 + b.value * 0.114 < 128)
 );
 
@@ -74,8 +63,4 @@ effect(() => (document.body.style.backgroundColor = color.value));
 effect(() => (label.innerText = color.value));
 
 // change text color when bg is dark enough
-effect(
-  () =>
-    console.log("isDark") ||
-    document.body.classList.toggle("bg-dark", isDark.value)
-);
+effect(() => document.body.classList.toggle("bg-dark", isDark.value));
