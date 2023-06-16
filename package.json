@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tinyserve -w ."
+    "start": "tinyserve -w .",
+    "minify": "npx terser --mangle --ecma 2020 -o index.min.js -- index.js"
   },
   "keywords": [],
   "author": "potch",

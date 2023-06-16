@@ -1,4 +1,5 @@
 export const group = () => {
+  // dependencies track relationships between signals and which effects use them
   const dependencies = new Map();
 
   const addDependency = (from, to) => {
@@ -15,20 +16,19 @@ export const group = () => {
   const batchSet = new Set();
   let inBatch = false;
 
-  const signal = (_value, label) => {
+  // pure value sources
+  const signal = (_value) => {
     return {
-      label,
       set value(v) {
         _value = v;
         if (dependencies.has(this)) {
-          if (inBatch) {
-            dependencies.get(this).forEach((fn) => batchSet.add(fn));
-          } else {
-            dependencies.get(this).forEach((fn) => fn());
-          }
+          dependencies
+            .get(this)
+            .forEach(inBatch ? (fn) => batchSet.add(fn) : (fn) => fn());
         }
       },
       get value() {
+        // are we currently in the context of an effect? set up a dependency
         const currentContext = contextStack.at(-1);
         if (currentContext && currentContext != this) {
           addDependency(currentContext, this);
@@ -38,12 +38,14 @@ export const group = () => {
     };
   };
 
+  // pure effect
   const effect = (fn) => {
     contextStack.push(fn);
     fn();
     contextStack.pop();
   };
 
+  // computed signals are just a signal and an effect stapled together
   const computed = (fn) => {
     const s = signal();
     effect(() => {
@@ -56,6 +58,7 @@ export const group = () => {
     };
   };
 
+  // allow for multiple signals to be updated at once (or one many times) without propagating effects
   const batch = (fn) => {
     inBatch = true;
     fn();
