@@ -1,4 +1,6 @@
-import { signal, computed, effect, batch } from "./index.js";
+import { signal, computed, effect, batch, onchange } from "./index.js";
+
+const pipe = (source, ...args) => args.reduce((acc, cur) => cur(acc), source);
 
 // signals can be any value
 const a = signal(2);
@@ -8,7 +10,10 @@ const b = signal(3);
 const c = computed(() => Math.sqrt(a.value * a.value + b.value * b.value));
 
 // computed values can also be based on a mix of signals and other computed values
-const perimeter = computed(() => a.value + b.value + c.value);
+const perimeter = pipe(
+  computed(() => a.value + b.value + c.value),
+  onchange
+);
 
 // effects are for having other code react to changes in signals or computed values
 effect(() =>

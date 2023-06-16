@@ -60,10 +60,13 @@ export const group = () => {
 
   // allow for multiple signals to be updated at once (or one many times) without propagating effects
   const batch = (fn) => {
+    batchSet.clear();
     inBatch = true;
     fn();
+    for (let fn of batchSet) {
+      fn();
+    }
     inBatch = false;
-    batchSet.forEach((fn) => fn());
     batchSet.clear();
   };
 
@@ -71,3 +74,15 @@ export const group = () => {
 };
 
 export const { signal, effect, computed, batch } = group();
+
+// utility for only propagating distinct values
+export const onchange = (source) => {
+  let lastVal = source.value;
+  let output = signal(lastVal);
+  effect(() => {
+    if (lastVal !== source.value) {
+      lastVal = output.value = source.value;
+    }
+  });
+  return output;
+};
