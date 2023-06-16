@@ -1,96 +1,70 @@
-const dependencies = new Map();
+export const group = () => {
+  const dependencies = new Map();
 
-const addDependency = (from, to) => {
-  if (!dependencies.has(to)) {
-    dependencies.set(to, new Set());
-  }
-  dependencies.get(to).add(from);
-};
-
-// contexts are used to track dependencies.
-// Effects and Computeds are pushed onto the context stack during construction.
-let context = [];
-const getContext = () => context.at(-1);
-
-// batches are used to consolidate Effect updates
-let inBatch = false;
-let batchSet = new Set();
-
-// source values
-class Signal {
-  constructor(value) {
-    this._value = value;
-  }
-  set value(v) {
-    if (v !== this._value) {
-      this._value = v;
-      if (dependencies.has(this)) {
-        dependencies.get(this).forEach((c) => c.update());
-      }
+  const addDependency = (from, to) => {
+    if (!dependencies.has(to)) {
+      dependencies.set(to, new Set());
     }
-  }
-  get value() {
-    if (getContext()) {
-      addDependency(getContext(), this);
-    }
-    return this._value;
-  }
-}
+    dependencies.get(to).add(from);
+  };
 
-// derived values from Signals or other Computeds
-class Computed {
-  constructor(fn) {
-    this._update = fn;
-    context.push(this);
-    this.update();
-    context.pop();
-  }
-  update() {
-    const newValue = this._update();
-    if (newValue !== this._value) {
-      this._value = this._update();
-      if (dependencies.has(this)) {
-        dependencies.get(this).forEach((c) => c.update());
-      }
-    }
-  }
-  get value() {
-    if (getContext()) {
-      addDependency(getContext(), this);
-    }
-    return this._value;
-  }
-}
+  // contexts are used to track dependencies.
+  // effects are pushed onto the context stack during construction.
+  const contextStack = [];
 
-// effects are external "reactions" to value changes
-// they can be combined using `batch`
-class Effect {
-  constructor(fn) {
-    this._update = fn;
-    context.push(this);
-    this.update();
-    context.pop();
-  }
-  update() {
-    if (inBatch) {
-      batchSet.add(this);
-    } else {
-      this._update();
-    }
-  }
-}
+  const batchSet = new Set();
+  let inBatch = false;
 
-// interface
-export const signal = (v) => new Signal(v);
-export const computed = (fn) => new Computed(fn);
-export const effect = (fn) => new Effect(fn);
-export const batch = async (fn) => {
-  if (!inBatch) {
+  const signal = (_value, label) => {
+    return {
+      label,
+      set value(v) {
+        _value = v;
+        if (dependencies.has(this)) {
+          if (inBatch) {
+            dependencies.get(this).forEach((fn) => batchSet.add(fn));
+          } else {
+            dependencies.get(this).forEach((fn) => fn());
+          }
+        }
+      },
+      get value() {
+        const currentContext = contextStack.at(-1);
+        if (currentContext && currentContext != this) {
+          addDependency(currentContext, this);
+        }
+        return _value;
+      },
+    };
+  };
+
+  const effect = (fn) => {
+    contextStack.push(fn);
+    fn();
+    contextStack.pop();
+  };
+
+  const computed = (fn) => {
+    const s = signal();
+    effect(() => {
+      s.value = fn();
+    });
+    return {
+      get value() {
+        return s.value;
+      },
+    };
+  };
+
+  const batch = (fn) => {
     inBatch = true;
-    batchSet = new Set();
-  }
-  await fn();
-  inBatch = false;
-  batchSet.forEach((e) => e.update());
-  batchSet = null;
+    fn();
+    inBatch = false;
+    batchSet.forEach((fn) => fn());
+    batchSet.clear();
+  };
+
+  return { signal, effect, computed, batch };
 };
+
+export const { signal, effect, computed, batch } = group();
