@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tinyserve -w .",
-    "minify": "npx terser --mangle --ecma 2020 -o index.min.js -- index.js"
+    "minify": "npx terser --mangle --ecma 2020 --passes 2 -o index.min.js -- index.js"
   },
   "keywords": [],
   "author": "potch",
