@@ -1,18 +1,19 @@
 {
   "name": "@potch/signals",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "a small reactive signals library",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tinyserve -w .",
-    "minify": "npx terser --mangle --ecma 2020 --passes 2 -o index.min.js -- index.js"
+    "minify": "npx terser --mangle --ecma 2020 -o index.min.js -- index.js"
   },
   "keywords": [],
   "author": "potch",
   "license": "MIT",
   "devDependencies": {
-    "@potch/tinyserve": "^1.1.0"
+    "@potch/tinyserve": "^1.1.0",
+    "terser": "^5.18.0"
   }
 }
