@@ -75,6 +75,8 @@ export const group = () => {
 
 export const { signal, effect, computed, batch } = group();
 
+const pipe = (source, ...args) => args.reduce((acc, cur) => cur(acc), source);
+
 // utility for only propagating distinct values
 export const onchange = (source) => {
   let lastVal = source.value;
